@@ -8,6 +8,7 @@ src/**
 eslint.config.mjs
 .prettierrc.json
 tsconfig.json
+tsconfig.jest.json
 jest.config.js
 jest.setup.js
 htmlcov/**
