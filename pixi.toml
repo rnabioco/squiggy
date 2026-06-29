@@ -59,9 +59,10 @@ selenium = ">=4.6.0"
 python = ">=3.10"
 
 [feature.docs.pypi-dependencies]
+# Zensical reads zensical.toml directly. Note: it does not yet support the
+# mkdocstrings or mike plugins, so the API reference is hand-authored (docs/api.md)
+# and versioning is not wired up. Revisit when Zensical ships plugin support.
 zensical = "*"
-mkdocstrings = { version = ">=0.24.0", extras = ["python"] }
-mike = ">=2.0.0"
 
 [feature.docs.tasks]
 docs-build = "zensical build"

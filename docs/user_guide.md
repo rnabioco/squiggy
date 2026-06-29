@@ -36,14 +36,18 @@ This happens automatically - no manual Python installation required! The setup t
 
 ### Opening the Extension
 
-Once setup is complete, click the **Squiggy icon** in the Activity Bar (left sidebar) to reveal:
+Once setup is complete, click the **Squiggy icon** in the Activity Bar (left sidebar) to
+reveal the sidebar panels:
 
-- **Files** - POD5/BAM/FASTA file information
-- **Search** - Filter reads by ID or reference
-- **Reads** - Hierarchical read list with Plot buttons
-- **Advanced Plotting** - Visualization settings and analysis type
-- **Base Modifications** - Modification filtering (appears when BAM with mods loaded)
-- **Samples** - Multi-sample comparison manager
+- **Samples** - Load and manage POD5/BAM/FASTA files; select samples for multi-sample comparison
+- **Session Manager** - Save, restore, import, and export your session (loaded files + settings)
+- **Read Explorer** - Searchable, virtualized read table; grouped by reference when a BAM is loaded
+- **Plotting** - Plot mode, normalization, x-axis scaling, and comparison options
+- **Modifications Explorer** - Base-modification filtering (appears when a BAM with MM/ML tags is loaded)
+- **Motif Explorer** - Search the loaded reference for IUPAC sequence motifs
+
+Panels appear contextually — for example, **Modifications Explorer** is shown only when the
+loaded BAM contains modification tags, and **Motif Explorer** requires a FASTA reference.
 
 ## Sample Data
 
@@ -68,13 +72,13 @@ Alternatively, download files directly from the [GitHub repository](https://gith
 2. Type `Squiggy: Open POD5 File`
 3. Select your `.pod5` file
 
-**Method 2: File Panel**
-1. Click "Open POD5 File" in the Files panel
+**Method 2: Samples Panel**
+1. Click "Open POD5 File" in the Samples panel
 2. Browse and select your file
 
 **What you'll see:**
-- File path and size in Files panel
-- All read IDs in the Reads panel (flat list)
+- File path and size in the Samples panel
+- All read IDs in the Read Explorer (flat list)
 
 ### Loading a BAM File (Optional but Recommended)
 
@@ -148,7 +152,30 @@ Use the Search panel to filter reads:
 
 ### Multiple Reads
 
-See the [Aggregate Plots](#aggregate-plots) section for multi-read visualization.
+Select several reads (Ctrl/Cmd-click in the Read Explorer), then choose a multi-read view
+mode in the **Plotting** panel:
+
+- **OVERLAY** – reads drawn on the same axes with transparency
+- **STACKED** – reads offset vertically (squigualiser-style)
+- **REFERENCE OVERLAY** – reads aligned to genomic reference positions, with consensus
+  base letters shown along the axis (requires a BAM aligned to a reference)
+
+See the [Aggregate Plots](#aggregate-plots) section for pileup/statistics views, and
+[Multi-Sample Comparison](#multi-sample-comparison) for cross-sample modes.
+
+### Plot Modes at a Glance
+
+| Mode | Inputs | What it shows |
+|------|--------|---------------|
+| `SINGLE` | 1 read | Raw signal trace for one read |
+| `EVENTALIGN` | 1 read + BAM (`mv` tag) | Signal with base annotations overlaid |
+| `OVERLAY` | N reads | Reads overlaid on shared axes |
+| `STACKED` | N reads | Reads offset vertically |
+| `REFERENCE_OVERLAY` | N reads + BAM | Reads aligned to reference positions, consensus bases |
+| `AGGREGATE` | reference + BAM | Multi-read pileup/statistics tracks for a reference |
+| `DELTA` | 2+ samples | Per-position signal difference between samples |
+| `SIGNAL_OVERLAY_COMPARISON` | 2+ samples | Raw signal from multiple samples overlaid |
+| `AGGREGATE_COMPARISON` | 2+ samples + reference | Per-sample aggregate statistics side by side |
 
 ## Plot Customization
 
@@ -266,7 +293,7 @@ Aggregate plots visualize statistics across multiple reads aligned to the same r
 
 ### Creating Aggregate Plots
 
-1. In the **Advanced Plotting** panel, select **Analysis Type: Aggregate**
+1. In the **Plotting** panel, select **Analysis Type: Aggregate**
 2. Choose a **Reference** sequence from the dropdown
 3. Set **Maximum Reads** to include (default: 100)
 4. Select which panels to display (see below)
@@ -369,6 +396,30 @@ You can toggle individual panels on/off before generating the plot:
 **For Sharing:**
 - HTML format preserves interactivity
 - Recipients can zoom/pan themselves
+
+## Motif Search
+
+When a FASTA reference is loaded, the **Motif Explorer** panel searches the reference for
+IUPAC sequence motifs (e.g. `DRACH`, `GATC`).
+
+1. Load a FASTA reference (Command Palette → `Squiggy: Open FASTA File`).
+2. Open the **Motif Explorer** panel and enter an IUPAC motif.
+3. Matches are listed with position and strand; use them to drive motif-aggregate plots.
+
+To aggregate signal across **all** matches of a motif, use
+[`plot_motif_aggregate_all`](api.md#plotting) from the Python API or the
+`Squiggy: Plot Motif Aggregate` command.
+
+## Sessions
+
+The **Session Manager** panel (and the `Squiggy: ... Session` commands) let you persist and
+restore your working state — the loaded POD5/BAM/FASTA files, samples, and plot settings.
+
+- **Save Session** / **Restore Session** – snapshot and reload state within the workspace
+- **Export Session to File** / **Import Session from File** – move a session between machines
+- **Clear Saved Session** – discard the stored session
+- **Load Demo Session** / **Load Pipeline Session** – load preconfigured sessions for
+  demos or pipeline output
 
 ## Keyboard Shortcuts
 
@@ -486,7 +537,7 @@ Repeat for each sample you want to load.
 
 **Step 2: View Samples**
 
-In the sidebar, find the **"Sample Comparison Manager"** panel showing all loaded samples with:
+In the sidebar, find the **Samples** panel showing all loaded samples with:
 - Read counts
 - File paths
 - Status badges (BAM/FASTA loaded)
@@ -496,7 +547,16 @@ In the sidebar, find the **"Sample Comparison Manager"** panel showing all loade
 
 1. Check the checkboxes next to 2+ samples
 2. Click **"Start Comparison"** button
-3. Delta plot appears in the **Plots** pane
+3. The comparison plot appears in the **Plots** pane
+
+### Comparison Modes
+
+Multi-sample comparison supports three plot modes (selectable in the **Plotting** panel):
+
+- **DELTA** – per-position signal difference between samples (default; `plot_delta_comparison`)
+- **SIGNAL_OVERLAY_COMPARISON** – raw signal from each sample overlaid (`plot_signal_overlay_comparison`)
+- **AGGREGATE_COMPARISON** – per-sample aggregate statistics (signal/dwell/pileup) shown side
+  by side, in `overlay` or `stacked` view style (`plot_aggregate_comparison`; requires a reference)
 
 ### Use Cases
 

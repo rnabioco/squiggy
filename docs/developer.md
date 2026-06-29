@@ -42,7 +42,7 @@ pixi install && pixi run setup
 ```
 
 This installs:
-- **pixi install**: Python 3.12, Node.js 20+, packages from conda-forge (numpy, pytest, ruff, mkdocs), and PyPI packages (pod5, pysam, bokeh, selenium)
+- **pixi install**: Python 3.12, Node.js 20+, packages from conda-forge (numpy, pytest, ruff), and PyPI packages (pod5, pysam, bokeh, selenium); docs tooling (zensical) lives in the separate `docs` pixi environment
 - **pixi run setup**: npm packages (TypeScript, Jest, ESLint, Prettier) via `npm install`
 - All dependencies locked via `pixi.lock` and `package-lock.json`
 
@@ -134,7 +134,7 @@ source .venv/bin/activate  # macOS/Linux
 npm run watch     # Watch mode (auto-recompile TypeScript on save)
 npm test && pytest tests/ -v  # Run ALL tests
 npm run package   # Build .vsix extension package
-mkdocs serve      # Serve documentation locally
+pixi run docs     # Serve documentation locally (zensical serve)
 ```
 
 **Granular Commands (work with both pixi and uv):**
@@ -215,7 +215,9 @@ squiggy-positron-extension/
 │   │   ├── eventalign.py       # EventAlignPlotStrategy
 │   │   ├── aggregate.py        # AggregatePlotStrategy
 │   │   ├── delta.py            # DeltaPlotStrategy (multi-sample comparison)
-│   │   └── signal_overlay_comparison.py  # SignalOverlayComparisonStrategy
+│   │   ├── signal_overlay_comparison.py  # SignalOverlayComparisonStrategy
+│   │   ├── aggregate_comparison.py       # AggregateComparisonStrategy
+│   │   └── reference_overlay.py          # ReferenceOverlayPlotStrategy
 │   │
 │   └── rendering/              # Reusable rendering components
 │       ├── theme_manager.py        # Centralized theme management
@@ -228,18 +230,21 @@ squiggy-positron-extension/
 │   │   ├── positron-runtime-client.ts   # Positron kernel integration
 │   │   ├── squiggy-runtime-api.ts       # High-level API wrapper
 │   │   └── squiggy-python-backend.ts    # JSON-RPC subprocess fallback
-│   ├── views/                  # UI panels
-│   │   ├── components/         # React components for reads panel
-│   │   │   ├── squiggy-reads-core.tsx   # Main table logic
-│   │   │   ├── squiggy-reads-instance.tsx # Webview host
-│   │   │   ├── squiggy-read-item.tsx    # Individual read row
-│   │   │   ├── squiggy-reference-group.tsx # Grouped by reference
-│   │   │   ├── column-resizer.tsx       # Resizable columns
+│   ├── views/                  # React webview panels
+│   │   ├── base-webview-provider.ts     # Shared webview provider base class
+│   │   ├── components/         # React components (one set per panel)
+│   │   │   ├── squiggy-reads-core.tsx   # Read table logic
+│   │   │   ├── squiggy-samples-core.tsx # Samples panel
+│   │   │   ├── squiggy-session-core.tsx # Session manager
+│   │   │   ├── squiggy-plot-options-core.tsx # Plot options
+│   │   │   ├── squiggy-modifications-core.tsx # Modifications filter
 │   │   │   └── webview-entry.tsx        # React entry point
-│   │   ├── squiggy-file-panel.ts        # File info panel
-│   │   ├── squiggy-reads-view-pane.ts   # Read list React webview
-│   │   ├── squiggy-plot-options-view.ts # Plot options panel
-│   │   └── squiggy-modifications-panel.ts # Modifications panel
+│   │   ├── squiggy-samples-panel.ts     # SamplesPanelProvider
+│   │   ├── squiggy-session-panel.ts     # SessionPanelProvider
+│   │   ├── squiggy-reads-panel.ts       # ReadsViewPane
+│   │   ├── squiggy-plot-options-panel.ts # PlotOptionsViewProvider
+│   │   ├── squiggy-modifications-panel.ts # ModificationsPanelProvider
+│   │   └── squiggy-motif-panel.ts       # MotifSearchPanelProvider
 │   ├── types/                  # TypeScript type definitions
 │   │   └── squiggy-positron.d.ts       # Positron API types
 │   └── __mocks__/              # Test mocks
@@ -256,7 +261,7 @@ squiggy-positron-extension/
 │   ├── release.yml             # Create releases and publish to OpenVSX
 │   └── docs.yml                # Deploy documentation to GitHub Pages
 │
-├── docs/                       # Documentation (MkDocs)
+├── docs/                       # Documentation (Zensical)
 ├── jest.config.js              # Jest test configuration
 ├── tsconfig.json               # TypeScript configuration
 ├── package.json                # Extension manifest
@@ -267,23 +272,26 @@ squiggy-positron-extension/
 
 ### Data Flow
 
+```mermaid
+flowchart TD
+    USER[User Action<br/>Positron UI panels]
+    EXT[Extension<br/>TypeScript]
+    RUNTIME[Positron Runtime API<br/>executeSilent / getVariable]
+    KERNEL[Dedicated Squiggy<br/>Python Kernel]
+    PKG[squiggy package<br/>Python backend]
+    FACTORY[PlotFactory → PlotStrategy<br/>Strategy Pattern]
+    BOKEH[Bokeh figure]
+    PLOTS[Positron Plots pane<br/>via bokeh.io.show]
+
+    USER --> EXT --> RUNTIME --> KERNEL --> PKG --> FACTORY --> BOKEH --> PLOTS
 ```
-User Action (Positron UI)
-    ↓
-Extension (TypeScript)
-    ↓
-Positron Runtime API
-    ↓
-Active Python Kernel
-    ↓
-squiggy Package (Python)
-    ↓
-PlotFactory → PlotStrategy (Strategy Pattern)
-    ↓
-Bokeh HTML Output
-    ↓
-Webview Panel (TypeScript)
-```
+
+Plots render in Positron's native **Plots pane** — the extension no longer hosts a
+webview for plots. `bokeh.io.show()` inside the Python plotting code is intercepted by
+Positron and routed to the Plots pane (see [Plot Display](#4-plot-display)).
+
+> The full architecture diagram lives in `docs/.manuscript/architecture-diagram.mmd`
+> (rendered to SVG/PNG for the manuscript).
 
 ### Strategy Pattern Architecture
 
@@ -321,6 +329,8 @@ Squiggy uses the **Strategy Pattern** for plot generation, making it easy to add
 | `AggregatePlotStrategy` | `AGGREGATE` | Multi-track aggregate view | Multi-read statistics and pileup |
 | `DeltaPlotStrategy` | `DELTA` | Delta track comparing two samples | Multi-sample comparison showing differences |
 | `SignalOverlayComparisonStrategy` | `SIGNAL_OVERLAY_COMPARISON` | Multiple samples overlaid | Compare signal characteristics across samples |
+| `AggregateComparisonStrategy` | `AGGREGATE_COMPARISON` | Per-sample aggregate statistics shown side by side | Compare aggregate signal/dwell across samples |
+| `ReferenceOverlayPlotStrategy` | `REFERENCE_OVERLAY` | Reads overlaid on genomic reference positions with consensus base letters | Inspect signal across reads aligned to a reference |
 
 #### Adding a New Plot Type
 
@@ -511,11 +521,19 @@ Entry point when extension loads:
 
 #### 3. UI Panels
 
-**FilePanelProvider** - Displays POD5/BAM file info
-**ReadTreeProvider** - Hierarchical read list (grouped by reference if BAM loaded)
-**ReadSearchView** - Search by read ID or reference name
-**PlotOptionsView** - Plot configuration (mode, normalization, scaling)
-**ModificationsPanelProvider** - Base modification filtering (when BAM has MM/ML tags)
+All sidebar panels are React webviews (bundled separately by webpack) backed by a
+provider class in `src/views/` with React components in `src/views/components/`:
+
+| View (`package.json`) | Provider (`src/views/`) | Purpose |
+|-----------------------|-------------------------|---------|
+| Samples (`squiggyComparisonSamples`) | `SamplesPanelProvider` (`squiggy-samples-panel.ts`) | POD5/BAM/FASTA sample management and multi-sample selection |
+| Session Manager (`squiggySessionPanel`) | `SessionPanelProvider` (`squiggy-session-panel.ts`) | Save / restore / import / export session state |
+| Read Explorer (`squiggyReadList`) | `ReadsViewPane` (`squiggy-reads-panel.ts`) | Virtualized read table (react-window), grouped by reference when a BAM is loaded |
+| Plotting (`squiggyPlotOptions`) | `PlotOptionsViewProvider` (`squiggy-plot-options-panel.ts`) | Plot mode, normalization, x-axis scaling, comparison options |
+| Modifications Explorer (`squiggyModificationsPanel`) | `ModificationsPanelProvider` (`squiggy-modifications-panel.ts`) | Base-modification filtering (when BAM has MM/ML tags) |
+| Motif Explorer (`squiggyMotifSearch`) | `MotifSearchPanelProvider` (`squiggy-motif-panel.ts`) | IUPAC motif search across the loaded reference |
+
+Webview providers extend `BaseWebviewProvider` (`src/views/base-webview-provider.ts`).
 
 #### 4. Plot Display
 
@@ -530,16 +548,19 @@ and routes to the Plots pane (with history and navigation).
 - `load_pod5()` - Load POD5 file into kernel state
 - `load_bam()` - Load BAM file for annotations
 - `plot_read()` - Generate Bokeh plot for single read
-- Returns Bokeh HTML that's displayed in webview
+- Routes the Bokeh figure to Positron's Plots pane via `bokeh.io.show()`; also returns
+  the HTML string for notebook display and file export
 
 ## Testing
 
 ### TypeScript Tests
 
-Located in `src/**/__tests__/`:
+Located in `src/**/__tests__/` (Jest + ts-jest), covering:
 
-- **ReadTreeProvider tests** - Search/filtering logic
-- **PythonBackend tests** - JSON-RPC communication mocking
+- **Webview panels** (`src/views/__tests__/`) - panel providers and React components
+- **Commands** (`src/commands/__tests__/`) - file, plot, session, and state commands
+- **Backend** (`src/backend/__tests__/`) - runtime client, kernel manager, runtime API
+- **State & services** - extension state, session manager, file loading/resolution
 
 ```bash
 npm test                 # Run all tests
@@ -684,7 +705,7 @@ GitHub Actions runs on every push/PR:
 - **test.yml**: Python and TypeScript tests on ubuntu-latest and macos-latest
 - **build.yml**: Compile and package .vsix artifact
 - **release.yml**: Create GitHub releases and publish to Open VSX Registry (on version tags)
-- **docs.yml**: Deploy MkDocs documentation to GitHub Pages (on push to main)
+- **docs.yml**: Build the Zensical documentation and deploy to GitHub Pages (on push to main)
 
 Test coverage is automatically uploaded to Codecov.
 

@@ -70,7 +70,7 @@ Command Palette → "Load Sample (Multi-Sample Comparison)"
 
 ### 3. View Samples
 
-In the **Squiggy sidebar**, find the **Sample Comparison Manager** panel showing:
+In the **Squiggy sidebar**, find the **Samples** panel showing:
 
 ```
 Loaded Samples (2)
@@ -131,7 +131,7 @@ Command Palette (Cmd/Ctrl+Shift+P)
 
 ### Viewing Sample Details
 
-The **Sample Comparison Manager** panel shows:
+The **Samples** panel shows:
 
 - **Sample name**: User-defined identifier
 - **POD5 path**: Location of signal file
@@ -142,7 +142,7 @@ The **Sample Comparison Manager** panel shows:
 ### Removing Samples
 
 ```
-Sample Comparison Manager panel
+Samples panel
 → Click [Unload] button next to sample name
 → Confirm in dialog
 → Sample removed from session
@@ -154,7 +154,7 @@ Sample Comparison Manager panel
 
 ### Selecting Samples
 
-In the **Sample Comparison Manager** panel:
+In the **Samples** panel:
 
 1. Check the checkboxes next to samples to compare
 2. Need **minimum 2 samples** for comparison
@@ -177,7 +177,7 @@ In the **Sample Comparison Manager** panel:
 **Option 1: Via Panel**
 
 ```
-Sample Comparison Manager
+Samples
 → Check 2+ samples
 → Click [Start Comparison]
 → Plot appears in Plots pane
