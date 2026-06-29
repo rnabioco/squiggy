@@ -29,6 +29,9 @@ uv.lock
 # macOS
 .DS_Store
 
+# Build/tool caches
+.cache/
+
 # Testing
 .pytest_cache/
 .coverage

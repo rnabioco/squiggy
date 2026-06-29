@@ -1,5 +1,34 @@
 # Squiggy Release Notes
 
+## v0.2.0 (2026-06-29)
+
+First stable (non-alpha) release. Adds multi-track aggregate plots, a large round of
+backend performance and UI stability work, and migrates the documentation site to Zensical.
+
+### Features
+
+- **Multi-Track Aggregate Plot**: Composite aggregate view combining signal, dwell-time, quality, coverage, and base-call pileup tracks for a reference
+
+### Improvements
+
+- **Backend Performance**: Indexed BAM fetching, file mtime caching, and a fixed file-handle leak speed up loading and plotting
+- **Read Explorer Stability**: Eliminated table remount jank and persisted column widths across updates
+- **Componentized Webviews**: Decomposed the two large webview panels into reusable React components
+- **Unified Sample State**: Consolidated sample state into a single source of truth in `ExtensionState`
+- **Consistent Error Reporting**: Session/state command and plot errors now surface through a shared error handler
+- **Plots Pane**: Removed the dead plot webview; plots route to Positron's native Plots pane
+
+### Fixes
+
+- **Kernel Lifecycle**: Resolved kernel-manager concurrency and lifecycle gaps
+- **Aggregate Alignment**: Fixed aggregate track alignment in composite plots
+- **Search UX**: References now auto-expand when searching by read ID
+
+### Documentation
+
+- **Zensical Migration**: Migrated the docs site to Zensical (`zensical.toml`), wired up Mermaid diagrams, and rewrote the API reference as a hand-authored page
+- **Coverage**: Documented the `AGGREGATE_COMPARISON` and `REFERENCE_OVERLAY` plot modes plus the Session Manager and Motif Explorer panels
+
 ## v0.1.33-alpha (2026-05-29)
 
 Per-sample pileups and consensus base letters in composite/overlay plots, plus a Positron API sync to React 19 and build fixes.

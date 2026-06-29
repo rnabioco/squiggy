@@ -57,6 +57,8 @@ docs/**
 legacy/**
 site/**
 mkdocs.yml
+zensical.toml
+overrides/**
 CLAUDE.md
 
 # Positron source code (development only)
@@ -70,6 +72,7 @@ package-lock.json
 # Build artifacts
 *.log
 *.vsix
+.cache/**
 build/build/**
 build/dist/**
 build/__mocks__/**
