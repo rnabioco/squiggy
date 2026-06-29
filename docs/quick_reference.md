@@ -44,6 +44,17 @@ Fast lookup for common tasks and commands.
 | `squiggy.restoreSession` | Restore saved session |
 | `squiggy.exportSession` | Export session to file |
 | `squiggy.importSession` | Import session from file |
+| `squiggy.clearSession` | Discard the saved session |
+| `squiggy.loadPipelineSession` | Load a session from pipeline output |
+
+### Kernel & Diagnostics
+
+| Command | Description |
+|---------|-------------|
+| `squiggy.restartBackgroundKernel` | Restart the dedicated Squiggy kernel |
+| `squiggy.resetVenv` | Reset the Python environment |
+| `squiggy.showLogs` | Show the extension log output |
+| `squiggy.setLogLevel` | Set the extension log level |
 
 ## Keyboard Shortcuts
 
@@ -119,7 +130,7 @@ Add to `keybindings.json`:
 ```
 1. Load Sample (v5.0)
 2. Load Sample (v6.0)
-3. Sample Comparison Manager shows both
+3. Samples panel shows both
 4. Check both samples
 5. Click [Start Comparison]
 6. Delta plot in Plots pane
@@ -395,7 +406,7 @@ wc -l file.fasta
 ### Plot Blank
 
 - [ ] Read ID exists? (Check Read Explorer)
-- [ ] POD5 loaded? (Files panel should show file)
+- [ ] POD5 loaded? (Samples panel should show file)
 - [ ] Try different plot mode (SINGLE vs EVENTALIGN)
 
 ### Modifications Not Showing

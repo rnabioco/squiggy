@@ -1,0 +1,85 @@
+# Zensical configuration for the Squiggy documentation site.
+# Migrated from mkdocs.yml — Zensical reads this native TOML format directly.
+# Docs: https://zensical.org/docs/setup/basics/
+
+[project]
+site_name = "Squiggy"
+site_description = "A Positron IDE extension for visualizing Oxford Nanopore sequencing data"
+site_author = "rnabioco"
+site_url = "https://rnabioco.github.io/squiggy-positron/"
+repo_url = "https://github.com/rnabioco/squiggy-positron"
+repo_name = "rnabioco/squiggy-positron"
+edit_uri = "edit/main/docs/"
+
+nav = [
+  { Home = "index.md" },
+  { "User Guide" = "user_guide.md" },
+  { "Quick Reference" = "quick_reference.md" },
+  { Advanced = [
+    { "Multi-Sample Comparison" = "multi_sample_comparison.md" },
+    { "API Reference" = "api.md" },
+  ] },
+  { "Developer Guide" = "developer.md" },
+  { Troubleshooting = [
+    { "Logging & Debugging" = "guides/LOGGING.md" },
+    { "Manual Testing Guide" = "guides/MANUAL_TESTING_GUIDE.md" },
+  ] },
+]
+
+# ----------------------------------------------------------------------------
+# Theme
+# ----------------------------------------------------------------------------
+[project.theme]
+logo = "assets/logo.svg"
+favicon = "assets/logo.svg"
+# custom_dir is resolved relative to the project root (where zensical.toml lives).
+# It is kept OUTSIDE docs_dir so the override template isn't published as a page;
+# overrides/main.html supplies the Plausible analytics block.
+custom_dir = "overrides"
+features = [
+  "navigation.sections",
+  "navigation.expand",
+  "navigation.top",
+  "navigation.footer",
+  "search.suggest",
+  "search.highlight",
+  "content.code.copy",
+  "content.code.annotate",
+]
+
+[[project.theme.palette]]
+scheme = "default"
+primary = "blue grey"
+accent = "blue"
+toggle.icon = "material/brightness-7"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+primary = "blue grey"
+accent = "blue"
+toggle.icon = "material/brightness-4"
+toggle.name = "Switch to light mode"
+
+# ----------------------------------------------------------------------------
+# Markdown extensions (dotted-table syntax; an empty table enables defaults).
+# ----------------------------------------------------------------------------
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.tables]
+[project.markdown_extensions.toc]
+permalink = true
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.snippets]
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+
+# Mermaid diagrams — official Zensical setup (auto light/dark, no JS/plugin).
+# Docs: https://zensical.org/docs/authoring/diagrams/
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]

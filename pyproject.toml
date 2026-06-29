@@ -2,7 +2,7 @@
 name = "squiggy-positron"
 version = "0.1.33"
 description = "Python backend for Squiggy Positron extension - Nanopore squiggle visualization. Not recommended for standalone use."
-readme = "docs/PYPI_README.md"
+readme = "docs/.PYPI_README.md"
 requires-python = ">=3.12"
 license = "MIT"
 authors = [{ name = "Jay Hesselberth", email = "jay.hesselberth@gmail.com" }]
@@ -42,9 +42,10 @@ dev = [
   "pytest>=7.0",
   "pytest-cov>=4.0",
   "ruff>=0.1.0",
-  "mkdocs>=1.5.0",
-  "mkdocs-material>=9.0.0",
   "jupyter>=1.0.0",  # For testing in notebooks
+]
+docs = [
+  "zensical",  # Static site generator by the Material for MkDocs team
 ]
 export = [
   "selenium>=4.6",  # Selenium Manager (auto-downloads geckodriver) requires 4.6+
